@@ -5,10 +5,12 @@ const express = require('express');
 const app = express();
 const notes = require('./db/db.json')
 
+
 app.use(express.static('public'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// localhost:3001/
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public/index.html'));
   });
@@ -18,21 +20,25 @@ app.get('/notes', (req, res) => {
   });
 
   app.get('/api/notes', (req, res) => {
-    res.status(200).json(notes);
+    const currentNotes = JSON.parse(fs.readFileSync('./db/db.json'));
+    console.log(currentNotes)
+    res.status(200).json(currentNotes);
   });
 //app.get add read from file
   app.post('/api/notes', (req, res) => {
  //app.post add read from file, append data, rewrite   
+ const oldNotes = JSON.parse(fs.readFileSync('./db/db.json'));
+ 
     const {title, text} = req.body;
 
     if (title && text) {
 
         const newTask = {
-            title,
-            text,
+            title: title,
+            text: text,
         };
-    
-         const reviewString = JSON.stringify(newTask);
+    oldNotes.push(newTask);
+         const reviewString = JSON.stringify(oldNotes);
 
         fs.writeFile('./db/db.json', reviewString, (err) => 
         err
@@ -43,7 +49,7 @@ app.get('/notes', (req, res) => {
         );
         const response = {
             status: 'success',
-            body: newReview,
+            body: newTask,
           };
       
           console.log(response);
@@ -53,3 +59,7 @@ app.get('/notes', (req, res) => {
         }
     
   });
+
+  app.listen(PORT, () =>
+  console.log(`App listening at http://localhost:${PORT} 🚀`)
+);
